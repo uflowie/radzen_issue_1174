@@ -1,0 +1,60 @@
+﻿@page "/"
+
+<PageTitle>Index</PageTitle>
+
+<CascadingValue Value="editContext">
+    <RadzenStack>
+        <h3>Datepicker bound to EditContext Model</h3>
+        <RadzenDatePickerDiagnostics @bind-Value="graph.date" DiagnosticsName="DatePicker bound to EditContext Model"
+            PopupRenderMode="PopupRenderMode.OnDemand" />
+        <h3>Datepicker bound to different Model</h3>
+        <RadzenDatePickerDiagnostics @bind-Value="graphChild.date" DiagnosticsName="DatePicker bound to different Model"
+            PopupRenderMode="PopupRenderMode.OnDemand" />
+        <NotifyValidationStateChangedButton />
+        <RadzenButton Text="Rerender Page" Click="_ => {}"/>
+        <h3>Reproduction Steps</h3>
+        <div>
+            In order to provoke the issue described in <a href="https://github.com/radzenhq/radzen-blazor/issues/1174">https://github.com/radzenhq/radzen-blazor/issues/1174</a>
+            take the following steps:
+            <ol>
+                <li>Open up developer tools (F12) and navigate to the console tab</li>
+                <li>Click the "NotifyValidationStateChangedButton".</li>
+                <li>Observe that the Datepicker bound to the child Property in the graph wants to call StateHasChanged() multiple times.</li>
+                <li>Click the "Rerender Page" button.</li>
+                <li>Click the "NotifyValidationStateChangedButton" button.</li>
+                <li>Observe that the Datepicker bound to the child Property in the graph wants to call StateHasChanged() even more times than in step 3.</li>
+                <li>Repeat steps 4 and 5 multiple times.</li>
+                <li>Note that every repetition adds extra calls to StateHasChanged</li>
+            </ol>
+        </div>
+        <div>
+            Please note that this may not produce performance issues in this particular constellation, due to the way the Blazor Render queue processes StateHasChanged()
+            calls. In our internal code base, this exact issue causes the site to become very slow after just a handful of render cycles.
+        </div>
+    </RadzenStack>
+</CascadingValue>
+
+@code {
+    private Graph graph = new Graph();
+    private GraphChild graphChild = new GraphChild();
+
+    private EditContext editContext;
+
+    public Index()
+    {
+        graph.child = graphChild;
+        editContext = new EditContext(graph);
+    }
+
+    public class Graph
+    {
+        public DateTime date = DateTime.Now;
+        public GraphChild child;
+    }
+
+    public class GraphChild
+    {
+        public DateTime date = DateTime.Now;
+    }
+
+}

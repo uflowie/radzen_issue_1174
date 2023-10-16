@@ -1,0 +1,5 @@
+<RadzenButton Text="NotifyValidationStateChanged" Click="_ => editContext.NotifyValidationStateChanged()" />
+
+@code {
+    [CascadingParameter] public EditContext editContext { get; set; }
+}
